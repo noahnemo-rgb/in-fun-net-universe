@@ -1,0 +1,58 @@
+# ============================================================
+# universe.yaml — ONE In-Fun.net Universe
+# ============================================================
+universe:
+  name: ONE In-Fun.net Universe
+  tagline: Where Play Meets Purpose
+  maturity: placeholder
+  parent_multiverse: one-multiverse
+  inherits_from: one-universe
+  governance:
+    framework: HASEOS
+    repo: github.com/noahnemo-rgb/haseos-spiral-swarm
+  brand:
+    palette:
+      cosmos: "#0a0820"
+      primary: "#7ce8d4"
+      accent: "#ff7eb6"
+  vision: |
+    ONE In-Fun.net Universe is a child universe under ONE Multiverse, inheriting
+    the structural grammar of ONE Universe. Its domain is play, creativity, and
+    purposeful entertainment — a universe where joy is a serious business.
+
+repos:
+  - id: one-in-fun-net-universe
+    name: ONE In-Fun.net Universe
+    role: master
+    repo: github.com/noahnemo-rgb/one-in-fun-net-universe
+    maturity: placeholder
+    owner: noahnemo-rgb
+    tags: [master, brand, manifest, placeholder]
+    description: >
+      The master brand repo for ONE In-Fun.net Universe. Holds the canonical
+      universe.yaml, brand assets, top-level ADRs, and the front-door README.
+    contains:
+      - README.md
+      - STATUS.md
+      - universe.yaml
+      - BRAND/
+      - ADR/
+      - docs/
+      - governance/
+      - containers/
+      - ecosystems/
+      - shared_scaffold/
+
+known_gaps:
+  - governance layer not yet implemented
+  - ONE Ecology equivalent container not yet defined
+  - no ecosystems defined
+  - no MVPs or products
+  - BRAND/ assets missing
+  - shared_scaffold/ not yet populated
+
+next_steps:
+  - define the container layer (equivalent of ONE Ecology for this universe)
+  - identify 3–6 founding ecosystems aligned with play and purpose
+  - implement governance/ wired to HASEOS
+  - draft charter.md and roadmap.md
