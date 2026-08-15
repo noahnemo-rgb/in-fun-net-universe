@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ONE :: IN-FUN.NET // 3D Playa Canvas</title>
+  
+  <!-- Three.js & OrbitControls via CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body {
+      background-color: #080911;
+      color: #f0f0f0;
+      font-family: system-ui, -apple-system, sans-serif;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+    }
+    #canvas-container { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; }
+    
+    /* HUD Header - ONE Multiverse Branding */
+    .hud-header {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      z-index: 10;
+      pointer-events: auto;
+      background: rgba(8, 9, 17, 0.85);
+      padding: 14px 20px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 158, 226, 0.35);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    }
+    .hud-header .node-badge {
+      font-size: 0.68rem;
+      font-family: monospace;
+      color: #00f0ff;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+    .hud-header h1 {
+      font-size: 1.2rem;
+      letter-spacing: 2px;
+      color: #ff9ee2;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .hud-header .constitution-tag {
+      font-size: 0.72rem;
+      color: #a3ffcb;
+      margin-top: 6px;
+      font-family: monospace;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .hud-header .multiverse-link {
+      display: inline-block;
+      margin-top: 8px;
+      font-size: 0.7rem;
+      color: #00f0ff;
+      text-decoration: none;
+      font-family: monospace;
+      border-bottom: 1px dashed #00f0ff;
+      transition: color 0.2s;
+    }
+    .hud-header .multiverse-link:hover { color: #ff9ee2; border-color: #ff9ee2; }
+
+    /* Interactive Helper Hint */
+    .interaction-hint {
+      position: absolute;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      background: rgba(255, 158, 226, 0.15);
+      border: 1px solid #ff9ee2;
+      color: #ffffff;
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      pointer-events: none;
+      animation: pulse 2s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; transform: translateX(-50%) scale(1); }
+      50% { opacity: 1; transform: translateX(-50%) scale(1.05); }
+    }
+
+    /* Modal Overlay for HAIA Combine Card */
+    #modal-overlay {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(10px);
+      z-index: 100;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+      padding: 20px;
+    }
+    #modal-overlay.active { opacity: 1; pointer-events: auto; }
+    
+    .card-wrapper {
+      max-width: 540px;
+      width: 100%;
+      position: relative;
+      transform: translateY(20px);
+      transition: transform 0.4s ease;
+    }
+    #modal-overlay.active .card-wrapper { transform: translateY(0); }
+    
+    .close-btn {
+      position: absolute;
+      top: -12px;
+      right: -12px;
+      background: #ff9ee2;
+      color: #000;
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 0 15px rgba(255,158,226,0.6);
+      z-index: 110;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ONE Multiverse HUD Header -->
+  <div class="hud-header">
+    <div class="node-badge">ONE MULTIVERSE // NODE #01</div>
+    <h1><span>🎪</span> ONE :: IN-FUN.NET</h1>
+    <div class="constitution-tag">
+      <span>⚖️</span> Accountable under HASEOS Constitution v1.0
+    </div>
+    <a class="multiverse-link" href="https://repo-mapper-live.vercel.app/" target="_blank">
+      🔗 Open Multiverse Navigator (Repo Mapper)
+    </a>
+  </div>
+
+  <!-- Interaction Hint -->
+  <div class="interaction-hint">
+    ✨ Tap or Click the Floating Glass Crystal
+  </div>
+
+  <!-- 3D Canvas Container -->
+  <div id="canvas-container"></div>
+
+  <!-- HAIA Combine Card Modal Overlay -->
+  <div id="modal-overlay">
+    <div class="card-wrapper">
+      <button class="close-btn" id="close-modal">✕</button>
+      
+      <!-- HAIA COMBINE CARD SPECIMEN -->
+      <div style="background: #080911; border: 2px solid #ff9ee2; border-radius: 20px; padding: 24px; position: relative; font-family: system-ui, sans-serif; color: #f0f0f0; box-shadow: 0 10px 40px rgba(255,158,226,0.3);">
+        
+        <!-- Ticket Stub -->
+        <div style="background: linear-gradient(135deg, #ff9ee2, #ffb703); color: #000; padding: 6px 14px; border-radius: 6px; transform: rotate(-1.5deg); display: inline-block; font-weight: 800; font-family: monospace; font-size: 0.85em; letter-spacing: 1px; margin-bottom: 14px;">
+          🎟️ ONE :: SPECIMEN #OCTO-PEARL-0826
+        </div>
+
+        <h2 style="margin: 0 0 12px 0; color: #ffb7b2; font-size: 1.35em;">🍬 The Pearl Brooding Ledge</h2>
+
+        <!-- Human Layer -->
+        <div style="background: rgba(255, 183, 178, 0.12); border-left: 4px solid #ffb7b2; padding: 12px 16px; border-radius: 0 10px 10px 0; margin-bottom: 14px;">
+          <div style="font-size: 0.7em; text-transform: uppercase; color: #ffb7b2; font-weight: bold; letter-spacing: 1px;">Human Spark Layer</div>
+          <p style="margin: 6px 0 0 0; font-style: italic; color: #ffffff; font-size: 0.95em; line-height: 1.4;">
+            "I’d be sending my arms outward across every surface in search of pearls of all different sizes, shapes, and colors to decorate my mate’s egg brooding ledge’s underside."
+          </p>
+        </div>
+
+        <!-- AI Layer -->
+        <div style="background: rgba(0, 240, 255, 0.08); border-left: 4px solid #00f0ff; padding: 12px 16px; border-radius: 0 10px 10px 0; margin-bottom: 14px;">
+          <div style="font-size: 0.7em; text-transform: uppercase; color: #00f0ff; font-weight: bold; letter-spacing: 1px;">Crystalline AI Synthesis</div>
+          <div style="margin-top: 6px; background: rgba(0,0,0,0.45); padding: 10px; border-radius: 6px; border: 1px solid rgba(0,240,255,0.2);">
+            <strong style="color: #00ffaa; font-size: 0.85em;">🌀 Chemotactile Autonomy & Maternal Brooding</strong>
+            <ul style="margin: 6px 0 0 16px; padding: 0; color: #d0f8ff; font-size: 0.82em; line-height: 1.4;">
+              <li>Chemosensory suckers identify mineral textures in pitch-black reef crevices.</li>
+              <li>Birefringent mother-of-pearl reflects polarized light in dark underwater caves.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div style="border-top: 1px dashed rgba(255, 158, 226, 0.4); padding-top: 10px; display: flex; justify-content: space-between; font-size: 0.75em; color: #ff9ee2;">
+          <span>✨ HASEOS Constitution Verified</span>
+          <span>🔗 [[ONE Multiverse / Node #01]]</span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- THREE.JS 3D SCENE SETUP ---
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x080911, 0.035);
+
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 3, 8);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    container.appendChild(renderer.domElement);
+
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.maxPolarAngle = Math.PI / 2 - 0.01;
+
+    // --- LIGHTING ---
+    const ambientLight = new THREE.AmbientLight(0x0a0d1a, 2);
+    scene.add(ambientLight);
+
+    const crystalLight = new THREE.PointLight(0x00f0ff, 4, 15);
+    crystalLight.position.set(0, 2, 0);
+    scene.add(crystalLight);
+
+    const magentaLight = new THREE.PointLight(0xff9ee2, 3, 12);
+    magentaLight.position.set(0, 3, 0);
+    scene.add(magentaLight);
+
+    // --- PLAYA GROUND GRID ---
+    const gridHelper = new THREE.GridHelper(60, 60, 0xff9ee2, 0x00f0ff);
+    gridHelper.position.y = -0.01;
+    gridHelper.material.opacity = 0.25;
+    gridHelper.material.transparent = true;
+    scene.add(gridHelper);
+
+    // --- DRIFTING SPORES (PARTICLES) ---
+    const particleCount = 400;
+    const particleGeo = new THREE.BufferGeometry();
+    const particleCoords = new Float32Array(particleCount * 3);
+    for (let i = 0; i < particleCount * 3; i += 3) {
+      particleCoords[i] = (Math.random() - 0.5) * 40;
+      particleCoords[i + 1] = Math.random() * 15;
+      particleCoords[i + 2] = (Math.random() - 0.5) * 40;
+    }
+    particleGeo.setAttribute('position', new THREE.BufferAttribute(particleCoords, 3));
+    const particleMat = new THREE.PointsMaterial({
+      color: 0x00ffaa,
+      size: 0.08,
+      transparent: true,
+      opacity: 0.6
+    });
+    const particleSystem = new THREE.Points(particleGeo, particleMat);
+    scene.add(particleSystem);
+
+    // --- CENTRAL 3D GLASS CRYSTAL ---
+    const glassGeo = new THREE.IcosahedronGeometry(1.5, 0);
+    const glassMat = new THREE.MeshPhysicalMaterial({
+      color: 0x00f0ff,
+      emissive: 0x110022,
+      roughness: 0.1,
+      metalness: 0.1,
+      transmission: 0.9,
+      thickness: 1.2,
+      transparent: true,
+      opacity: 0.85,
+      wireframe: false
+    });
+    const glassMesh = new THREE.Mesh(glassGeo, glassMat);
+    glassMesh.position.set(0, 2, 0);
+    scene.add(glassMesh);
+
+    // Inner Core Geometry
+    const coreGeo = new THREE.OctahedronGeometry(0.7, 0);
+    const coreMat = new THREE.MeshBasicMaterial({ color: 0xff9ee2, wireframe: true });
+    const coreMesh = new THREE.Mesh(coreGeo, coreMat);
+    glassMesh.add(coreMesh);
+
+    // --- RAYCASTING FOR TOUCH / CLICK INTERACTION ---
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+
+    function onPointerDown(event) {
+      // Avoid firing if clicking the HUD overlay elements
+      if (event.target.closest('.hud-header')) return;
+
+      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObject(glassMesh);
+
+      if (intersects.length > 0) {
+        crystalLight.intensity = 12;
+        setTimeout(() => crystalLight.intensity = 4, 300);
+        document.getElementById('modal-overlay').classList.add('active');
+      }
+    }
+    window.addEventListener('pointerdown', onPointerDown);
+
+    // Close Modal
+    document.getElementById('close-modal').addEventListener('click', () => {
+      document.getElementById('modal-overlay').classList.remove('active');
+    });
+
+    // Handle Window Resize
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // --- ANIMATION LOOP ---
+    let clock = new THREE.Clock();
+    function animate() {
+      requestAnimationFrame(animate);
+      const elapsedTime = clock.getElapsedTime();
+
+      // Rotate glass centerpiece
+      glassMesh.rotation.x = elapsedTime * 0.3;
+      glassMesh.rotation.y = elapsedTime * 0.5;
+      coreMesh.rotation.y = -elapsedTime * 0.8;
+
+      // Float centerpiece
+      glassMesh.position.y = 2 + Math.sin(elapsedTime * 1.5) * 0.2;
+
+      // Pulse inner light
+      magentaLight.intensity = 2 + Math.sin(elapsedTime * 3) * 1.5;
+
+      // Animate particles drifting
+      const positions = particleGeo.attributes.position.array;
+      for (let i = 1; i < particleCount * 3; i += 3) {
+        positions[i] += 0.005;
+        if (positions[i] > 15) positions[i] = 0;
+      }
+      particleGeo.attributes.position.needsUpdate = true;
+
+      controls.update();
+      renderer.render(scene, camera);
+    }
+    animate();
+  </script>
+</body>
+</html>
