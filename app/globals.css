@@ -1,0 +1,242 @@
+:root {
+  color-scheme: dark;
+  --gold: #fff5d6;
+  --gold-dim: rgba(255, 245, 214, 0.72);
+  --void: #000;
+  --font: var(--font-outfit), "Outfit", ui-sans-serif, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: var(--void);
+  color: white;
+  font-family: var(--font);
+}
+
+body {
+  overflow: hidden;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.stage {
+  position: relative;
+  height: 100vh;
+  height: 100dvh;
+  background: var(--void);
+  overflow: hidden;
+}
+
+.gateway-still,
+.world-canvas,
+.flash {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.world-canvas {
+  z-index: 1;
+}
+
+.gateway-still {
+  z-index: 2;
+}
+
+.gateway-still.away {
+  z-index: 0;
+}
+
+.gateway-still {
+  object-fit: contain;
+  background: var(--void);
+  transition: opacity 0.6s ease;
+}
+
+.gateway-still.away {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.world-canvas {
+  display: block;
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.flash {
+  background: white;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.door {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: min(28vw, 220px);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: transparent;
+  -webkit-text-stroke: 0.7px var(--gold);
+  cursor: pointer;
+  letter-spacing: 0.42em;
+  font-weight: 200;
+  font-size: clamp(0.75rem, 1.5vw, 1rem);
+  z-index: 3;
+}
+
+.door span {
+  position: absolute;
+  left: 50%;
+  top: 112%;
+  translate: -50% 0;
+  padding-left: 0.42em;
+  white-space: nowrap;
+}
+
+.door:hover,
+.door:focus-visible {
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.22), transparent 68%);
+  outline: none;
+}
+
+.peer-speech,
+.sign-line {
+  position: fixed;
+  z-index: 3;
+  width: min(22rem, 70vw);
+  transform: translate(-50%, -120%);
+  margin: 0;
+  text-align: center;
+  pointer-events: none;
+}
+
+.peer-speech p,
+.sign-line {
+  margin: 0 0 0.35rem;
+  font-weight: 300;
+  font-size: 1.05rem;
+  line-height: 1.4;
+  color: white;
+  text-shadow: 0 0 16px rgba(255, 255, 255, 0.55);
+}
+
+.who {
+  color: transparent;
+  -webkit-text-stroke: 0.6px var(--gold);
+  letter-spacing: 0.28em;
+  font-size: 0.78rem;
+  font-weight: 200;
+  text-shadow: none;
+}
+
+.sign-line {
+  color: var(--gold);
+  text-shadow: 0 0 12px rgba(255, 245, 214, 0.35);
+  font-weight: 200;
+  letter-spacing: 0.04em;
+}
+
+.listening {
+  letter-spacing: 0.08em;
+  opacity: 0.8;
+}
+
+.ground-ui {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 1rem 1.4rem;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.stage.ground .ground-ui {
+  opacity: 1;
+}
+
+.hint {
+  margin: 0;
+  color: transparent;
+  -webkit-text-stroke: 0.5px var(--gold);
+  letter-spacing: 0.18em;
+  font-size: 0.78rem;
+  font-weight: 200;
+}
+
+.speak {
+  pointer-events: auto;
+  width: min(28rem, 86vw);
+  position: fixed;
+  left: 50%;
+  z-index: 4;
+  translate: -50% 0.6rem;
+}
+
+.speak input {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 245, 214, 0.65);
+  background: transparent;
+  color: var(--gold);
+  caret-color: var(--gold);
+  text-align: center;
+  font-weight: 200;
+  font-size: 1rem;
+  letter-spacing: 0.18em;
+  padding: 0.45rem 0;
+  outline: none;
+}
+
+.speak input::placeholder {
+  color: var(--gold-dim);
+}
+
+.ground-ui h1 {
+  margin: 0;
+  font-weight: 200;
+  font-size: clamp(1.15rem, 2.4vw, 1.7rem);
+  line-height: 1;
+  letter-spacing: 0.32em;
+  padding-left: 0.32em;
+  color: transparent;
+  -webkit-text-stroke: 1px var(--gold);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gateway-still {
+    transition: none;
+  }
+}
